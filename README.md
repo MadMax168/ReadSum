@@ -1,5 +1,3 @@
----
-
 ## 🧱 Branch Types
 
 | ประเภท | ใช้เมื่อ | ตัวอย่าง |
@@ -11,5 +9,3 @@
 | **chore/** | งานจิปาถะ เช่น setup/config/update | `chore/update-go-version`, `chore/setup-eslint` |
 | **docs/** | เอกสาร / README | `docs/api-guide` |
 | **hotfix/** | แก้บั๊กด่วนบน production | `hotfix/critical-db-error` |
-
----
