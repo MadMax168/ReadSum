@@ -134,3 +134,56 @@ func GetUser(c *fiber.Ctx) error {
 
 	return c.Status(200).JSON(response)
 }
+
+type PasswordUpdate struct {
+	OldPassword string `json:"old_password"`
+	NewPassword string `json:"new_password"`
+}
+
+func UpdPass(c *fiber.Ctx) error {
+	UID, ok := c.Locals("userID").(uint)
+	if !ok {
+		return customerrors.NewUnauthorizedError("Autentication required")
+	}
+
+	var input PasswordUpdate
+
+	if err := c.BodyParser(&input); err != nil{
+		return customerrors.NewBadRequestError("Invalid request body format")
+	}
+
+	if len(input.NewPassword) < 6 {
+		return customerrors.NewBadRequestError("New password must be at least 6 characters")
+	}
+	if input.OldPassword == input.NewPassword {
+		return customerrors.NewBadRequestError("New password must be different from old password")
+	}
+
+	var user models.User
+	result := config.DB.First(&user, UID)
+
+	if result.RowsAffected == 0 {
+		return customerrors.NewNotFoundError("User not found")
+	}
+	if result.Error != nil {
+		return customerrors.NewInternalServerError("Database error during user fetch")
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.OldPassword)); err != nil {
+		return  customerrors.NewUnauthorizedError("Invalid password")
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return customerrors.NewInternalServerError("Failed to process new password hash")
+	}
+
+	if err := config.DB.Model(&user).Update("Password", string(hashedPassword)).Error; err != nil {
+		return customerrors.NewInternalServerError("Failed to save new password to database")
+	}
+
+	return c.Status(200).JSON(fiber.Map{
+		"message": "Password updated successfully",
+
+	})
+}

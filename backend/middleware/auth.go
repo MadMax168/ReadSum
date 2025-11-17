@@ -13,19 +13,19 @@ import (
 func AuthMiddleware(c *fiber.Ctx) error {
 	authHeader := c.Get("Authorization")
 	if authHeader  == "" {
-		return customerrors.NewInternalServerError("Missing authorization header")
+		return customerrors.NewUnauthorizedError("Missing authorization header")
 	}
 
 	jwtSecret := os.Getenv("JWT_SECRET")
     if jwtSecret == "" {
-		return customerrors.NewInternalServerError("Server configuration error: JWT secret not set")
+		return customerrors.NewUnauthorizedError("Server configuration error: JWT secret not set")
     }
 
 	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, customerrors.NewInternalServerError("Unexpected signing method")
+			return nil, customerrors.NewUnauthorizedError("Unexpected signing method")
 		}
 		return []byte(jwtSecret), nil
 	})
