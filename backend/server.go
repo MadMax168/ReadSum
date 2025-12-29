@@ -1,8 +1,10 @@
 package main
 
 import (
-	"log"
 	"backend/config"
+	"log"
+	"os"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
@@ -13,13 +15,13 @@ func server() {
 		log.Println("Not found .env file")
 	}
 
-	config.ConnectDB();
+	config.ConnectDB()
 
 	config.DB.AutoMigrate(
-		//models
+	//models
 	)
 
-	app := fiber.New();
+	app := fiber.New()
 
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:     "http://localhost:3000",
@@ -28,6 +30,11 @@ func server() {
 		AllowCredentials: true,
 	}))
 
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "3000"
+	}
+
 	log.Println("Server Starting on: 8000")
-	app.Listen(":8000")
+	app.Listen(":" + port)
 }
