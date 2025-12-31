@@ -3,4 +3,33 @@ services:
         image: postgres:15
         restart: always
         environment:
-            POSTGRES_USER: postgres
+            POSTGRES_USER: ${DB_USER}
+            POSTGRES_PASSWORD: ${DB_PASSWORD}
+            POSTGRES_DB: ${DB_NAME}
+        ports:
+            - "5432:5432"
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+
+    backend:
+        build:
+            context: ./backend
+            dockerfile: Dockerfile
+        ports:
+            - "8080:8080"
+        depends_on:
+            - db
+        environment:
+            DB_HOST: db
+            DB_USER: ${DB_USER}
+            DB_PASSWORD: ${DB_PASSWORD}
+            DB_NAME: ${DB_NAME}
+            JWT_SECRET: $ {JWT_SECRET}
+        command: >
+            sh -c "go run server.go"
+        volumes:
+            - ./backend:/app
+        working_dir: /app
+
+volumes: 
+    postgres_data: #default driver
