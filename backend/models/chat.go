@@ -1,12 +1,12 @@
-package model
+package models
 
 import (
 	"gorm.io/gorm"
 )
 
-type chat struct {
+type Chat struct {
 	gorm.Model
 	Title   string `json:"title"`
 	UserID  uint
-	Message []message
+	Message []Message
 }

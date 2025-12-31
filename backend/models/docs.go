@@ -2,7 +2,7 @@ package models
 
 import "gorm.io/gorm"
 
-type docs struct {
+type Docs struct {
 	gorm.Model
 	Title   string `json:"title"`
 	Type    string `json:"type"`
@@ -11,5 +11,5 @@ type docs struct {
 	Status  string `json:"status"`
 	UserID  uint
 
-	Connect []relationship
+	Connect []Relationship
 }

@@ -2,7 +2,7 @@ package models
 
 import "gorm.io/gorm"
 
-type relationship struct {
+type Relationship struct {
 	gorm.Model
 	Score float64 `json:"score"`
 	Key   string  `json:"key"`

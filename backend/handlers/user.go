@@ -14,14 +14,14 @@ import (
 )
 
 type RegisterInput struct {
-		Name     string `json:"name"`
-		Email    string `json:"email"`
-		Password string `json:"password"`
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
-//DTO
+// DTO
 type UserResponse struct {
-	Name  string  `json:"name"`
+	Name  string `json:"name"`
 	Email string `json:"email"`
 }
 
@@ -77,12 +77,11 @@ func Register(c *fiber.Ctx) error {
 }
 
 type LoginInput struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 func Login(c *fiber.Ctx) error {
-	
 
 	var input LoginInput
 
@@ -104,7 +103,7 @@ func Login(c *fiber.Ctx) error {
 
 	token, err := middleware.GenerateToken(user.ID)
 	if err != nil {
-		return customerrors.NewInternalServerError("Failed to generate token");
+		return customerrors.NewInternalServerError("Failed to generate token")
 	}
 
 	return c.JSON(fiber.Map{"token": token})
@@ -122,13 +121,13 @@ func GetUser(c *fiber.Ctx) error {
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return customerrors.NewNotFoundError("User not found")
-		}else {
+		} else {
 			return customerrors.NewInternalServerError("Database query failed")
 		}
 	}
 
 	response := UserResponse{
-		Name: user.Name,
+		Name:  user.Name,
 		Email: user.Email,
 	}
 
@@ -148,7 +147,7 @@ func UpdPass(c *fiber.Ctx) error {
 
 	var input PasswordUpdate
 
-	if err := c.BodyParser(&input); err != nil{
+	if err := c.BodyParser(&input); err != nil {
 		return customerrors.NewBadRequestError("Invalid request body format")
 	}
 
@@ -170,7 +169,7 @@ func UpdPass(c *fiber.Ctx) error {
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.OldPassword)); err != nil {
-		return  customerrors.NewUnauthorizedError("Invalid password")
+		return customerrors.NewUnauthorizedError("Invalid password")
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.NewPassword), bcrypt.DefaultCost)
@@ -184,6 +183,5 @@ func UpdPass(c *fiber.Ctx) error {
 
 	return c.Status(200).JSON(fiber.Map{
 		"message": "Password updated successfully",
-
 	})
 }

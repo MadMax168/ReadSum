@@ -2,7 +2,7 @@ package models
 
 import "gorm.io/gorm"
 
-type message struct {
+type Message struct {
 	gorm.Model
 	Text     string `json:"text"`
 	Response string `json:"responsse"`
