@@ -1,37 +1,40 @@
 package main
 
 import (
+	"backend/config"
 	"log"
+	"os"
 
-	"github.com/MadMax168/Readsum/config"
-	"github.com/MadMax168/Readsum/models"
-	"github.com/MadMax168/Readsum/routes"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
 )
 
-func main() {
-	if err := godotenv.Load(".env"); err != nil {
-		log.Println("No .env file found")
+func server() {
+	if err := godotenv.Load("../.env"); err != nil {
+		log.Println("Not found .env file")
 	}
-	
-	config.ConnectDB();
+
+	config.ConnectDB()
 
 	config.DB.AutoMigrate(
-		&models.User{},
+	//models
 	)
 
 	app := fiber.New()
 
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:     "http://localhost:3000",
-		AllowMethods:     "GET,POST,PUT,DELETE,PATCH,OPTIONS",
 		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
+		AllowMethods:     "GET,POST,PUT,DELETE,OPTIONS",
 		AllowCredentials: true,
 	}))
 
-	routes.SetAllRoutes(app);
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "3000"
+	}
 
-	log.Fatal(app.Listen(":8080"))
+	log.Println("Server Starting on: 8000")
+	app.Listen(":" + port)
 }
