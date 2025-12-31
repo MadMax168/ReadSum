@@ -1,10 +1,10 @@
 package main
 
 import (
-	"backend/config"
 	"log"
 	"os"
 
+	"github.com/MadMax168/Readsum/config"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
