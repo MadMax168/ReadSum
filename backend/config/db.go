@@ -1,10 +1,12 @@
-package config 
+package config
 
-import ( 
-	"fmt" 
-	"os" 
-	"gorm.io/driver/postgres" 
-	"gorm.io/gorm" 
+import (
+	"fmt"
+	"os"
+
+	"github.com/MadMax168/Readsum/models"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 ) 
 
 var DB *gorm.DB 
@@ -21,7 +23,9 @@ func ConnectDB() {
 	
 	if err != nil { 
 		panic("Can not connect DB") 
-	} 
+	}
+
+	database.AutoMigrate(&models.Document{}, &models.User{})
 	
 	DB = database 
 }
