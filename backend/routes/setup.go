@@ -19,4 +19,10 @@ func SetAllRoutes(app *fiber.App){
 	
 	users.Get("/me", handlers.GetUser)
 	users.Patch("/me/password", handlers.UpdPass)
+
+	docs := v1.Group("/docs", middleware.AuthMiddleware)
+	docs.Post("/", handlers.CreateDocument)
+	docs.Get("/", handlers.GetDocuments)
+	docs.Get("/:id", handlers.GetDocumentByID)
+	docs.Delete("/:id", handlers.DeleteDocument)
 }
