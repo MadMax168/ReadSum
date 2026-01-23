@@ -17,12 +17,13 @@ type Document struct {
 	FileSize   int64     `json:"file_size"`
 	WordCount  int       `json:"word_count"`
 	UploadDate time.Time `json:"upload_date" gorm:"autoCreateTime"`
+
 	//ForeignKeys
 	UserID uint `json:"user_id" gorm:"not null;index"`
 	User   User `json:"user,omitempty" gorm:"constraint:OnDelete:CASCADE"`
 
-	ChatID uint `json:"chat_id" gorm:"not null;index"`
-	Chat   Chat `json:"chat,omitempty" gorm:"constraint:OnDelete:CASCADE"`
+	CollectionID uint       `json:"collection_id" gorm:"not null;index"`
+	Collection   Collection `json:"collection,omitempty" gorm:"constraint:OnDelete:CASCADE"`
 	//Relationships
 	SourceRalations []Relationship `json:"source_relations,omitempty" gorm:"foreignKey:SourceDocID"`
 	TargetRelations []Relationship `json:"target_relations,omitempty" gorm:"foreignKey:TargetDocID"`

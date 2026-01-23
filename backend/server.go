@@ -17,10 +17,6 @@ func server() {
 
 	config.ConnectDB()
 
-	config.DB.AutoMigrate(
-	//models
-	)
-
 	app := fiber.New()
 
 	app.Use(cors.New(cors.Config{
