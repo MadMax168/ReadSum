@@ -4,22 +4,21 @@ import (
 	"os"
 	"strings"
 
-	"github.com/MadMax168/Readsum/customerrors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
 )
 
-//Authentication
+// Authentication
 func AuthMiddleware(c *fiber.Ctx) error {
 	authHeader := c.Get("Authorization")
-	if authHeader  == "" {
+	if authHeader == "" {
 		return customerrors.NewUnauthorizedError("Missing authorization header")
 	}
 
 	jwtSecret := os.Getenv("JWT_SECRET")
-    if jwtSecret == "" {
+	if jwtSecret == "" {
 		return customerrors.NewUnauthorizedError("Server configuration error: JWT secret not set")
-    }
+	}
 
 	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 
