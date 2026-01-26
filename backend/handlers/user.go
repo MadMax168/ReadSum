@@ -5,9 +5,9 @@ import (
 	"strings"
 
 	"github.com/MadMax168/Readsum/config"
-	"github.com/MadMax168/Readsum/customerrors"
 	"github.com/MadMax168/Readsum/middleware"
 	"github.com/MadMax168/Readsum/models"
+	"github.com/MadMax168/Readsum/utils"
 	"github.com/gofiber/fiber/v2"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -29,31 +29,31 @@ func Register(c *fiber.Ctx) error {
 	var input RegisterInput
 
 	if err := c.BodyParser(&input); err != nil {
-		return customerrors.NewBadRequestError("Invalid request body")
+		return utils.NewBadRequestError("Invalid request body")
 	}
 
 	input.Name = strings.TrimSpace(strings.ToLower(input.Name))
 	input.Email = strings.TrimSpace(strings.ToLower(input.Email))
 
 	if input.Name == "" || input.Email == "" || input.Password == "" {
-		return customerrors.NewBadRequestError("Name, email, and password are required")
+		return utils.NewBadRequestError("Name, email, and password are required")
 	}
 
 	if len(input.Password) < 6 {
-		return customerrors.NewBadRequestError("Password must be at least 6 characters")
+		return utils.NewBadRequestError("Password must be at least 6 characters")
 	}
 
 	var existingUser models.User
 
 	if err := config.DB.Where("email = ?", input.Email).First(&existingUser).Error; err == nil {
-		return customerrors.NewConflictError("Email already registered")
+		return utils.NewConflictError("Email already registered")
 	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
-		return customerrors.NewInternalServerError("Database error")
+		return utils.NewInternalServerError("Database error")
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return customerrors.NewInternalServerError("Failed to process password")
+		return utils.NewInternalServerError("Failed to process password")
 	}
 
 	user := models.User{
@@ -63,7 +63,7 @@ func Register(c *fiber.Ctx) error {
 	}
 
 	if err := config.DB.Create(&user).Error; err != nil {
-		return customerrors.NewInternalServerError("Failed to create user")
+		return utils.NewInternalServerError("Failed to create user")
 	}
 
 	return c.Status(201).JSON(fiber.Map{
@@ -85,25 +85,25 @@ func Login(c *fiber.Ctx) error {
 	var input LoginInput
 
 	if err := c.BodyParser(&input); err != nil {
-		return customerrors.NewBadRequestError("Invalid request body")
+		return utils.NewBadRequestError("Invalid request body")
 	}
 
 	input.Email = strings.TrimSpace(strings.ToLower(input.Email))
 	var user models.User
 	if err := config.DB.Where("email = ?", input.Email).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return customerrors.NewUnauthorizedError("Invalid email or password")
+			return utils.NewUnauthorizedError("Invalid email or password")
 		}
-		return customerrors.NewInternalServerError("Database error")
+		return utils.NewInternalServerError("Database error")
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(input.Password)); err != nil {
-		return customerrors.NewConflictError("Incorrect password")
+		return utils.NewConflictError("Incorrect password")
 	}
 
 	token, err := middleware.GenerateToken(user.ID)
 	if err != nil {
-		return customerrors.NewInternalServerError("Failed to generate token")
+		return utils.NewInternalServerError("Failed to generate token")
 	}
 
 	return c.Status(200).JSON(fiber.Map{
@@ -122,7 +122,7 @@ func Login(c *fiber.Ctx) error {
 func GetUser(c *fiber.Ctx) error {
 	UID, ok := c.Locals("userID").(uint)
 	if !ok || UID == 0 {
-		return customerrors.NewUnauthorizedError("Authentication required")
+		return utils.NewUnauthorizedError("Authentication required")
 	}
 	var user models.User
 
@@ -130,9 +130,9 @@ func GetUser(c *fiber.Ctx) error {
 
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return customerrors.NewNotFoundError("User not found")
+			return utils.NewNotFoundError("User not found")
 		} else {
-			return customerrors.NewInternalServerError("Database query failed")
+			return utils.NewInternalServerError("Database query failed")
 		}
 	}
 
@@ -152,43 +152,43 @@ type PasswordUpdate struct {
 func UpdPass(c *fiber.Ctx) error {
 	UID, ok := c.Locals("userID").(uint)
 	if !ok {
-		return customerrors.NewUnauthorizedError("Autentication required")
+		return utils.NewUnauthorizedError("Autentication required")
 	}
 
 	var input PasswordUpdate
 
 	if err := c.BodyParser(&input); err != nil {
-		return customerrors.NewBadRequestError("Invalid request body format")
+		return utils.NewBadRequestError("Invalid request body format")
 	}
 
 	if len(input.NewPassword) < 6 {
-		return customerrors.NewBadRequestError("New password must be at least 6 characters")
+		return utils.NewBadRequestError("New password must be at least 6 characters")
 	}
 	if input.OldPassword == input.NewPassword {
-		return customerrors.NewBadRequestError("New password must be different from old password")
+		return utils.NewBadRequestError("New password must be different from old password")
 	}
 
 	var user models.User
 	result := config.DB.First(&user, UID)
 
 	if result.RowsAffected == 0 {
-		return customerrors.NewNotFoundError("User not found")
+		return utils.NewNotFoundError("User not found")
 	}
 	if result.Error != nil {
-		return customerrors.NewInternalServerError("Database error during user fetch")
+		return utils.NewInternalServerError("Database error during user fetch")
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(input.OldPassword)); err != nil {
-		return customerrors.NewUnauthorizedError("Invalid password")
+		return utils.NewUnauthorizedError("Invalid password")
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.NewPassword), bcrypt.DefaultCost)
 	if err != nil {
-		return customerrors.NewInternalServerError("Failed to process new password hash")
+		return utils.NewInternalServerError("Failed to process new password hash")
 	}
 
 	if err := config.DB.Model(&user).Update("PasswordHash", string(hashedPassword)).Error; err != nil {
-		return customerrors.NewInternalServerError("Failed to save new password")
+		return utils.NewInternalServerError("Failed to save new password")
 	}
 
 	return c.Status(200).JSON(fiber.Map{
